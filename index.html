@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Understanding Navigator · Chapter 7</title>
+  <style>
+    :root {
+      --ink: #15243d;
+      --muted: #6b778c;
+      --paper: #f7f8fc;
+      --card: #ffffff;
+      --navy: #203a63;
+      --blue: #4c77d9;
+      --mint: #dff4e9;
+      --mint-ink: #18734a;
+      --peach: #fff0e5;
+      --peach-ink: #a9531b;
+      --line: #e6eaf1;
+      --shadow: 0 18px 45px rgba(34, 52, 85, .10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: radial-gradient(circle at 6% 2%, #e4edff 0, transparent 26rem), radial-gradient(circle at 95% 88%, #dff5ee 0, transparent 29rem), var(--paper);
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    }
+    .shell { max-width: 1120px; margin: auto; padding: 36px 24px 56px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .brand { display: flex; gap: 12px; align-items: center; font-weight: 800; letter-spacing: .03em; }
+    .brand-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--navy); color: white; font-size: 21px; box-shadow: 0 8px 18px rgba(32,58,99,.22); }
+    .session { color: var(--muted); font-size: 14px; }
+    .teacher-btn { border: 1px solid #d9e0ec; background: white; color: var(--navy); border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700; }
+    .grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+    .main-card, .side-card { background: rgba(255,255,255,.94); border: 1px solid rgba(255,255,255,.8); box-shadow: var(--shadow); }
+    .main-card { min-height: 545px; border-radius: 26px; padding: clamp(26px, 5vw, 54px); }
+    .kicker { color: var(--blue); font-size: 13px; font-weight: 800; letter-spacing: .12em; }
+    h1 { font-size: clamp(28px, 4vw, 43px); margin: 11px 0 13px; letter-spacing: -.04em; }
+    .intro { color: var(--muted); font-size: 17px; line-height: 1.75; max-width: 580px; }
+    .hero { padding-top: 36px; }
+    .rule-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 27px 0 32px; }
+    .rule { border-radius: 99px; padding: 8px 13px; background: #f1f4fa; color: #526077; font-size: 13px; }
+    button { border: 0; font: inherit; cursor: pointer; transition: transform .18s, box-shadow .18s, background .18s; }
+    button:hover { transform: translateY(-2px); }
+    .primary { padding: 14px 22px; border-radius: 13px; background: var(--navy); color: #fff; font-weight: 700; box-shadow: 0 10px 20px rgba(32,58,99,.2); }
+    .primary:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+    .question-wrap { display: none; }
+    .question-wrap.active { display: block; }
+    .question-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+    .level-chip { background: #e9f0ff; color: #315ba9; padding: 7px 11px; border-radius: 8px; font-size: 13px; font-weight: 800; }
+    .question-count { color: var(--muted); font-size: 14px; }
+    .question { margin: 0 0 27px; font-size: clamp(23px, 3vw, 31px); line-height: 1.45; letter-spacing: -.025em; }
+    .options { display: grid; gap: 12px; }
+    .option { text-align: left; padding: 16px 18px; background: #fff; border: 1.5px solid var(--line); border-radius: 13px; color: var(--ink); line-height: 1.45; }
+    .option:hover:not(:disabled) { border-color: var(--blue); background: #f7f9ff; }
+    .option:disabled { cursor: default; }
+    .option.correct { border-color: #61bf90; background: var(--mint); color: var(--mint-ink); }
+    .option.wrong { border-color: #efac7f; background: var(--peach); color: var(--peach-ink); }
+    .hint { margin: 21px 0 0; border-left: 3px solid #8eaef0; padding: 10px 14px; background: #f4f7fe; color: #4d648c; line-height: 1.6; border-radius: 0 8px 8px 0; font-size: 14px; }
+    .hint strong { color: #315ba9; }
+    .feedback { display: none; margin-top: 22px; padding: 16px 18px; border-radius: 13px; line-height: 1.6; }
+    .feedback.show { display: block; }
+    .feedback.good { background: var(--mint); color: var(--mint-ink); }
+    .feedback.support { background: var(--peach); color: var(--peach-ink); }
+    .next-row { display: flex; justify-content: flex-end; margin-top: 20px; }
+    .side-card { border-radius: 22px; padding: 24px; }
+    .side-card + .side-card { margin-top: 16px; }
+    .side-title { margin: 0 0 19px; font-size: 15px; }
+    .level-display { display: flex; gap: 14px; align-items: center; }
+    .level-number { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; background: #e9f0ff; color: #315ba9; font-size: 24px; font-weight: 800; }
+    .level-label { font-weight: 800; margin-bottom: 4px; }
+    .level-description { color: var(--muted); font-size: 13px; }
+    .meter { margin-top: 24px; }
+    .meter-head { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .meter-track { height: 9px; background: #edf0f6; border-radius: 99px; overflow: hidden; }
+    .meter-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #638de6, #324f90); border-radius: inherit; transition: width .35s; }
+    .streaks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .streak { padding: 13px; background: #f7f8fc; border-radius: 12px; }
+    .streak strong { display: block; font-size: 23px; }
+    .streak span { font-size: 12px; color: var(--muted); }
+    .summary { display: none; text-align: center; padding-top: 48px; }
+    .summary.active { display: block; }
+    .result-icon { width: 72px; height: 72px; display: grid; place-items: center; margin: 0 auto 18px; border-radius: 22px; font-size: 36px; font-weight: 900; }
+    .summary.pass .result-icon { background: var(--mint); color: var(--mint-ink); }
+    .summary.practice .result-icon { background: var(--peach); color: var(--peach-ink); }
+    .summary.pass .kicker { color: var(--mint-ink); }
+    .summary.practice .kicker { color: var(--peach-ink); }
+    .summary .score { color: var(--blue); font-size: 55px; font-weight: 900; letter-spacing: -.06em; margin: 8px 0; }
+    .summary p { color: var(--muted); line-height: 1.7; max-width: 560px; margin: 0 auto 24px; }
+    .name-field { display: grid; gap: 7px; max-width: 360px; margin: 0 0 20px; color: var(--muted); font-size: 13px; font-weight: 700; }
+    .name-field input { width: 100%; padding: 12px 13px; border: 1.5px solid var(--line); border-radius: 10px; font: inherit; color: var(--ink); }
+    .dashboard { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(21,36,61,.42); padding: 28px; overflow: auto; }
+    .dashboard.open { display: block; }
+    .dashboard-card { max-width: 900px; margin: 22px auto; padding: 30px; border-radius: 22px; background: white; box-shadow: 0 24px 60px rgba(21,36,61,.22); }
+    .dashboard-top { display: flex; gap: 14px; align-items: start; justify-content: space-between; margin-bottom: 22px; }
+    .dashboard h2 { margin: 0 0 6px; font-size: 27px; }
+    .dashboard p { margin: 0; color: var(--muted); line-height: 1.55; }
+    .close-btn { background: #f0f3f8; color: var(--navy); border-radius: 9px; width: 34px; height: 34px; font-size: 20px; }
+    .data-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 22px 0; }
+    .data-stat { padding: 16px; background: #f6f8fc; border-radius: 12px; }
+    .data-stat strong { display: block; font-size: 25px; margin-bottom: 3px; }
+    .data-stat span { color: var(--muted); font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 13px 10px; border-bottom: 1px solid var(--line); font-size: 14px; }
+    th { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .empty { padding: 25px 0; color: var(--muted); text-align: center; }
+    .dashboard-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+    .danger { padding: 10px 13px; border-radius: 10px; color: #9b3d25; background: #fff0e9; font-size: 13px; font-weight: 700; }
+    .export { padding: 10px 13px; border-radius: 10px; color: white; background: var(--navy); font-size: 13px; font-weight: 700; margin-right: 10px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } .sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; } .side-card + .side-card { margin-top: 0; } }
+    @media (max-width: 520px) { .shell { padding: 20px 16px 38px; } header { margin-bottom: 18px; } .session { display: none; } .main-card { min-height: 500px; padding: 28px 23px; } .sidebar { grid-template-columns: 1fr; } .data-summary { grid-template-columns: 1fr; } .dashboard { padding: 10px; } .dashboard-card { padding: 23px 18px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark">◒</span><span>Understanding Navigator · Chapter 7</span></div>
+      <span class="session" id="sessionText">Ready for today’s practice</span>
+    </header>
+    <div class="grid">
+      <section class="main-card">
+        <div class="hero" id="hero">
+          <div class="kicker">CHAPTER 7 · LEARNING AND CONDITIONING</div>
+          <h1>Explore how experience changes behavior and knowledge.</h1>
+          <p class="intro">This quiz has 3 levels and uses only your Chapter 7 Learning and Conditioning materials. Each question adapts to your answers as you build your understanding of habituation, classical and operant conditioning, reinforcement and punishment, cognitive learning, and observational learning. Get three correct in a row to take on a greater challenge; get two wrong in a row and we will return to the right foundation to strengthen your understanding.</p>
+          <div class="rule-row"><span class="rule">Starts at Level 2</span><span class="rule">3 correct answers: level up</span><span class="rule">2 incorrect answers: adjust</span></div>
+          <label class="name-field">Student name <input id="studentName" type="text" maxlength="40" placeholder="Enter your name" autocomplete="name"></label>
+          <button class="primary" id="startBtn">Start quiz →</button>
+        </div>
+        <div class="question-wrap" id="quiz">
+          <div class="question-meta"><span class="level-chip" id="questionLevel">Level 2 · Moderate</span><span class="question-count" id="questionCount">Question 1 of 10</span></div>
+          <h2 class="question" id="questionText"></h2>
+          <div class="options" id="options"></div>
+          <p class="hint" id="hint"></p>
+          <div class="feedback" id="feedback"></div>
+          <div class="next-row"><button class="primary" id="nextBtn" hidden>Next question →</button></div>
+        </div>
+        <div class="summary" id="summary">
+          <div class="result-icon" id="resultIcon" aria-hidden="true">✓</div>
+          <div class="kicker" id="resultKicker">PRACTICE COMPLETE</div>
+          <h1 id="resultTitle">You completed a round of concept navigation!</h1>
+          <div class="score" id="score">0 / 10</div>
+          <p id="summaryText"></p>
+          <button class="primary" id="restartBtn">Practice again</button>
+        </div>
+      </section>
+      <aside class="sidebar">
+        <section class="side-card">
+          <h2 class="side-title" id="levelCardTitle">Current difficulty</h2>
+          <div class="level-display"><div class="level-number" id="levelNumber">2</div><div><div class="level-label" id="levelLabel">Moderate challenge</div><div class="level-description" id="levelDesc">Making connections between ideas</div></div></div>
+          <div class="meter" id="levelMeter"><div class="meter-head"><span id="meterText">0 of 3 correct to level up</span><span id="meterValue">0%</span></div><div class="meter-track"><div class="meter-fill" id="meterFill"></div></div></div>
+        </section>
+        <section class="side-card">
+          <h2 class="side-title" id="answerCardTitle">Answer streaks</h2>
+          <div class="streaks"><div class="streak"><strong id="correctStreak">0</strong><span id="correctStreakLabel">Correct in a row</span></div><div class="streak"><strong id="wrongStreak">0</strong><span id="wrongStreakLabel">Incorrect in a row</span></div></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <section class="dashboard" id="dashboard" aria-label="TA performance dashboard">
+    <div class="dashboard-card">
+      <div class="dashboard-top"><div><h2>Chapter 7 TA performance dashboard</h2><p>Review student attempts from every device. Reload this page to see the latest activity.</p></div><button class="close-btn" id="closeDashboard" aria-label="Close dashboard">×</button></div>
+      <div class="data-summary"><div class="data-stat"><strong id="attemptCount">0</strong><span>Quiz attempts</span></div><div class="data-stat"><strong id="averageScore">—</strong><span>Average score</span></div><div class="data-stat"><strong id="levelThreeCount">0</strong><span>Reached Level 3</span></div></div>
+      <div id="recordsTable"></div>
+      <div class="dashboard-actions"><button class="export" id="exportRecords">Export Excel workbook (.xls)</button><button class="danger" id="clearRecords">Clear all class records</button></div>
+    </div>
+  </section>
+  <script src="questions.js"></script>
+  <script>
+    const chapter = '7';
+    const bank = window.chapter7Bank;
+    const levelInfo = {1:['Foundation building','Rebuild confidence with core definitions'],2:['Moderate challenge','Making connections between ideas'],3:['Advanced application','Ready to analyze and apply ideas']};
+    const storageKey = 'psychologyQuizRecordsChapter7';
+    const isTaMode = new URLSearchParams(window.location.search).get('mode') === 'ta';
+    let dashboardItems = [];
+    let taPasscode = sessionStorage.getItem('psychologyQuizTaPasscode') || '';
+    let level, correct, wrong, answered, total, index, current, currentOptions, answerPositions, highestLevel, sessionId, usedQuestions;
+    const el = id => document.getElementById(id);
+    const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    function records() { try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { return []; } }
+    function saveRecords(items) { localStorage.setItem(storageKey, JSON.stringify(items)); }
+    function saveProgress(completed=false) { if (!sessionId) return; const items=records(); const entry={ id:sessionId, chapter, student:el('studentName').value.trim() || 'Anonymous student', score:window.score || 0, answered:total, level, highestLevel, completed, updatedAt:new Date().toLocaleString() }; const found=items.findIndex(item=>item.id===sessionId); if(found>=0) items[found]=entry; else items.unshift(entry); saveRecords(items); fetch('/api/results',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)}).catch(()=>{}); }
+    function drawDashboard(items) { dashboardItems=items; const completed=items.filter(item=>item.completed); const average=completed.length ? Math.round(completed.reduce((sum,item)=>sum + item.score / 10 * 100,0) / completed.length) + '%' : '—'; el('attemptCount').textContent=items.length; el('averageScore').textContent=average; el('levelThreeCount').textContent=items.filter(item=>item.highestLevel>=3).length; el('recordsTable').innerHTML=items.length ? `<table><thead><tr><th>Student</th><th>Progress</th><th>Score</th><th>Highest level</th><th>Last updated</th></tr></thead><tbody>${items.map(item=>`<tr><td>${escapeHtml(item.student)}</td><td>${item.completed?'Complete':'In progress'} · ${item.answered}/10</td><td>${item.score}/10</td><td>Level ${item.highestLevel}</td><td>${escapeHtml(item.updatedAt)}</td></tr>`).join('')}</tbody></table>` : '<div class="empty">No student attempts have been recorded yet.</div>'; }
+    async function renderDashboard() { if(!taPasscode) taPasscode=prompt('Enter the TA dashboard passcode:') || ''; if(!taPasscode) { el('recordsTable').innerHTML='<div class="empty">A TA passcode is required.</div>'; return; } el('recordsTable').innerHTML='<div class="empty">Loading class results…</div>'; try { const response=await fetch('/api/results',{headers:{'X-TA-Passcode':taPasscode}}); if(response.status===401) { sessionStorage.removeItem('psychologyQuizTaPasscode'); taPasscode=''; el('recordsTable').innerHTML='<div class="empty">Incorrect passcode. Reload the page to try again.</div>'; return; } if(!response.ok) throw new Error('Unable to load results'); sessionStorage.setItem('psychologyQuizTaPasscode',taPasscode); drawDashboard(await response.json()); } catch { el('recordsTable').innerHTML='<div class="empty">The class database is temporarily unavailable. Please reload and try again.</div>'; } }
+    function exportRecords() { const items=isTaMode?dashboardItems:records(); if(!items.length) { alert('There are no student records to export yet.'); return; } const xmlEscape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char])); const columns=['Student','Status','Questions Answered','Score','Score (%)','Current Level','Highest Level','Last Updated']; const rows=items.map(item=>[item.student,item.completed?'Complete':'In progress',item.answered,item.score,item.score/10,item.level,item.highestLevel,item.updatedAt]); const numericColumns=new Set([2,3,4,5,6]); const cell=(value,index,header=false)=>{ const type=!header&&numericColumns.has(index)?'Number':'String'; const style=header?' ss:StyleID="Header"':index===4?' ss:StyleID="Percent"':''; return `<Cell${style}><Data ss:Type="${type}">${xmlEscape(value)}</Data></Cell>`; }; const workbook=`<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Font ss:FontName="Calibri" ss:Size="11"/></Style><Style ss:ID="Header"><Font ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#203A63" ss:Pattern="Solid"/></Style><Style ss:ID="Percent"><NumberFormat ss:Format="0%"/></Style></Styles><Worksheet ss:Name="Quiz Performance"><Table><Column ss:Width="140"/><Column ss:Width="90"/><Column ss:Width="110"/><Column ss:Width="60"/><Column ss:Width="70"/><Column ss:Width="85"/><Column ss:Width="85"/><Column ss:Width="145"/><Row>${columns.map((value,index)=>cell(value,index,true)).join('')}</Row>${rows.map(row=>`<Row>${row.map((value,index)=>cell(value,index)).join('')}</Row>`).join('')}</Table><AutoFilter xmlns="urn:schemas-microsoft-com:office:excel" x:Range="R1C1:R${rows.length+1}C8" xmlns:x="urn:schemas-microsoft-com:office:excel"/></Worksheet></Workbook>`; const blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8;'}); const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=`psychology-quiz-chapter-7-performance-${new Date().toISOString().slice(0,10)}.xls`; link.click(); URL.revokeObjectURL(url); }
+    function reset() { level=2; correct=wrong=answered=total=index=0; highestLevel=2; sessionId=null; current=null; usedQuestions=new Set(); answerPositions=[0,1,2,3,0,1,2,3,0,1]; for(let i=answerPositions.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [answerPositions[i],answerPositions[j]]=[answerPositions[j],answerPositions[i]];} el('studentName').disabled=false; el('hero').style.display='block'; el('quiz').classList.remove('active'); el('summary').className='summary'; el('levelCardTitle').textContent='Current difficulty'; el('levelMeter').style.display='block'; el('answerCardTitle').textContent='Answer streaks'; el('correctStreakLabel').textContent='Correct in a row'; el('wrongStreakLabel').textContent='Incorrect in a row'; updateSide(); }
+    function updateSide() { const [label, desc]=levelInfo[level]; el('levelNumber').textContent=level; el('levelLabel').textContent=label; el('levelDesc').textContent=desc; el('correctStreak').textContent=correct; el('wrongStreak').textContent=wrong; const target=3, pct=Math.min(correct/target*100,100); el('meterFill').style.width=pct+'%'; el('meterValue').textContent=Math.round(pct)+'%'; el('meterText').textContent= level===3 ? `Highest level reached · ${correct} correct in a row` : `${correct} of 3 correct to level up`; }
+    function pickQuestion() { const preferred=bank[level].filter(question=>!usedQuestions.has(question.q)); const fallback=Object.values(bank).flat().filter(question=>!usedQuestions.has(question.q)); const pool=preferred.length ? preferred : fallback; current=pool[Math.floor(Math.random()*pool.length)]; usedQuestions.add(current.q); }
+    function renderQuestion() { pickQuestion(); answered=false; index++; const targetPosition=answerPositions[index-1]; const correctOption={answer:current.a[current.c],originalIndex:current.c}; const distractors=current.a.map((answer,originalIndex)=>({answer,originalIndex})).filter(option=>option.originalIndex!==current.c); for(let i=distractors.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [distractors[i],distractors[j]]=[distractors[j],distractors[i]];} currentOptions=[...distractors]; currentOptions.splice(targetPosition,0,correctOption); el('questionLevel').textContent=`Level ${level} · ${levelInfo[level][0]}`; el('questionCount').textContent=`Question ${index} of 10`; el('questionText').textContent=current.q; el('options').innerHTML=''; currentOptions.forEach(({answer,originalIndex})=>{ const b=document.createElement('button'); b.className='option'; b.textContent=answer; b.onclick=()=>answerQuestion(originalIndex,b); el('options').appendChild(b); }); el('hint').innerHTML=level===1 ? `<strong>Concept hint:</strong> ${current.h}` : ''; el('hint').style.display=level===1?'block':'none'; el('feedback').className='feedback'; el('nextBtn').hidden=true; }
+    function answerQuestion(choice, button) { if(answered) return; answered=true; total++; const right=choice===current.c; const options=[...document.querySelectorAll('.option')]; options.forEach((b,i)=>{b.disabled=true; if(currentOptions[i].originalIndex===current.c)b.classList.add('correct');}); const feedback=el('feedback');
+      if(right) { correct++; wrong=0; button.classList.add('correct'); feedback.className='feedback good show'; feedback.innerHTML=`<strong>Correct!</strong> ${current.e}`; if(correct===3 && level<3) { level++; correct=0; feedback.innerHTML+=`<br><strong>Great work — you have advanced to Level ${level}!</strong> Try the next, more challenging questions.`; } }
+      else { wrong++; correct=0; button.classList.add('wrong'); feedback.className='feedback support show'; feedback.innerHTML=`<strong>This one can be confusing.</strong> ${current.e}`; if(wrong===2 && level>1) { level--; wrong=0; feedback.innerHTML+=`<br><strong>Let’s return to some foundation questions to strengthen the idea — no worries!</strong>`; } else if(level===1) { feedback.innerHTML+=`<br><strong>Let’s break it down:</strong> ${current.h}`; } }
+      if(right) window.score=(window.score||0)+1; highestLevel=Math.max(highestLevel,level); updateSide(); saveProgress(); el('sessionText').textContent=`${total} questions completed · ${right ? '1 correct' : 'keep practicing'}`; el('nextBtn').hidden=false; el('nextBtn').textContent=total>=10?'View results →':'Next question →'; }
+    function next() { if(total>=10) { saveProgress(true); el('quiz').classList.remove('active'); const finalScore=window.score||0, passed=finalScore>=8; el('summary').className=`summary active ${passed?'pass':'practice'}`; el('resultIcon').textContent=passed?'✓':'↻'; el('resultKicker').textContent=passed?'QUIZ COMPLETE':'MORE PRACTICE NEEDED'; el('resultTitle').textContent=passed?'Congratulations! You scored 80% or above.':'Please complete another practice round.'; el('score').textContent=`${finalScore} / 10`; el('summaryText').textContent=passed?'Great work — you have demonstrated a strong understanding of these concepts.':'You scored below 80%. Review the explanations, then practice once more to strengthen your understanding.'; el('restartBtn').textContent=passed?'Practice again':'Start another practice round'; el('sessionText').textContent=`10 questions completed · Score ${finalScore}/10`; el('levelCardTitle').textContent='Highest level reached'; el('levelMeter').style.display='none'; el('answerCardTitle').textContent='Quiz results'; el('correctStreak').textContent=finalScore; el('wrongStreak').textContent=10-finalScore; el('correctStreakLabel').textContent='Correct'; el('wrongStreakLabel').textContent='Incorrect'; return; } renderQuestion(); }
+    function start() { window.score=0; sessionId=`${Date.now()}-${Math.random().toString(16).slice(2)}`; el('studentName').disabled=true; el('hero').style.display='none'; el('quiz').classList.add('active'); el('sessionText').textContent='Quiz in progress'; saveProgress(); renderQuestion(); }
+    el('startBtn').onclick=start; el('nextBtn').onclick=next; el('restartBtn').onclick=()=>{reset(); start();};
+    el('closeDashboard').onclick=()=>el('dashboard').classList.remove('open');
+    el('exportRecords').onclick=exportRecords;
+    el('clearRecords').onclick=async()=>{ if(confirm('Permanently clear all Chapter 7 quiz records?')) { const response=await fetch('/api/results',{method:'DELETE',headers:{'X-TA-Passcode':taPasscode}}); if(response.ok) drawDashboard([]); else alert('The records could not be cleared.'); } };
+    reset();
+    if (isTaMode) { document.querySelector('.shell').style.display='none'; renderDashboard(); el('dashboard').classList.add('open'); }
+  </script>
+</body>
+</html>
